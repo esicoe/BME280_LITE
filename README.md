@@ -74,8 +74,6 @@ bme.calibrate(BMEaddress)
 
 ## Measurement Functions
 
-> ⚠️ **Important**: `readTemperature()` must be called first, as temperature readings are required for pressure and humidity calculations!
-
 ### `readTemperature()`
 
 Reads the temperature from the sensor.
