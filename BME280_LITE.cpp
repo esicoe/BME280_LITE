@@ -86,72 +86,78 @@ float BME280_LITE::readTemperature(uint8_t dev_addr) {
   int32_t temp_int = (t_fine * 5 + 128) >> 8;
   
   return (float)temp_int / 100.0f;
+
 }
 
 float BME280_LITE::readPressure(uint8_t dev_addr) {
+  uint8_t tfine[3];
+  read(dev_addr, TEMP_MSB, tfine, 3);
+
+  int32_t adc_T = ((int32_t)tfine[0] << 12) | ((int32_t)tfine[1] << 4) | (tfine[2] >> 4);
+
+  int32_t var1 = ((((adc_T >> 3) - (T1 << 1))) * ((int32_t)T2)) >> 11;
+  int32_t var2 = ((((adc_T >> 4) - T1) * ((adc_T >> 4) - (int32_t)T1)) >> 12) * (((int32_t)T3) >> 14);
+  t_fine = var1 + var2;
+
   uint8_t data[3];
   read(dev_addr, PRESS_MSB, data, 3);
-  
   int32_t adc_P = ((int32_t)data[0] << 12) | ((int32_t)data[1] << 4) | (data[2] >> 4);
   
-  int64_t var1, var2, p;
+  int64_t var1_64, var2_64, p;
   
-  var1 = (int64_t)t_fine - 128000;
-  var2 = var1 * var1 * (int64_t)P6;
-  var2 = var2 + ((var1 * (int64_t)P5) << 17);
-  var2 = var2 + (((int64_t)P4) << 35);
-  var1 = ((var1 * var1 * (int64_t)P3) >> 8) + ((var1 * (int64_t)P2) << 12);
-  var1 = ((((int64_t)1 << 47) + var1) * (int64_t)P1) >> 33;
+  var1_64 = (int64_t)t_fine - 128000;
+  var2_64 = var1_64 * var1_64 * (int64_t)P6;
+  var2_64 = var2_64 + ((var1_64 * (int64_t)P5) << 17);
+  var2_64 = var2_64 + (((int64_t)P4) << 35);
+  var1_64 = ((var1_64 * var1_64 * (int64_t)P3) >> 8) + ((var1_64 * (int64_t)P2) << 12);
+  var1_64 = ((((int64_t)1 << 47) + var1_64) * (int64_t)P1) >> 33;
 
-  if (var1 == 0) {
-      return 0.0f;
-  }
+  if (var1_64 == 0) return 0.0f;
   
   p = 1048576 - adc_P;
-  p = (((p << 31) - var2) * 3125) / var1;
-  var1 = ((int64_t)P9 * (p >> 13) * (p >> 13)) >> 25;
-  var2 = ((int64_t)P8 * p) >> 19;
-  p = ((p + var1 + var2) >> 8) + (((int64_t)P7) << 4);
+  p = (((p << 31) - var2_64) * 3125) / var1_64;
+  var1_64 = ((int64_t)P9 * (p >> 13) * (p >> 13)) >> 25;
+  var2_64 = ((int64_t)P8 * p) >> 19;
+  p = ((p + var1_64 + var2_64) >> 8) + (((int64_t)P7) << 4);
   
   return (float)p / 25600.0f;
 }
 
 float BME280_LITE::readHumidity(uint8_t dev_addr) {
-    uint8_t data[2];
-    read(dev_addr, HUM_MSB, data, 2);
-    int32_t adc_H = (data[0] << 8) | data[1];
-    
-    int32_t v_x1_u32r = t_fine - 76800;
-    
-    int32_t part1 = adc_H << 14;
-    int32_t part2 = (int32_t)H4 << 20;
-    int32_t part3 = (int32_t)H5 * v_x1_u32r;
-    v_x1_u32r = (part1 - part2 - part3 + 16384);
-    v_x1_u32r >>= 15;
+  uint8_t tfine[3];
+  read(dev_addr, TEMP_MSB, tfine, 3);
 
-    int32_t var1 = (v_x1_u32r * (int32_t)H6) >> 10;
-    int32_t var2 = (v_x1_u32r * (int32_t)H3) >> 11;
-    var1 = var1 * (var2 + 32768);
-    var1 >>= 10;
-    var1 += 2097152;
-    var1 *= (int32_t)H2;
-    var1 += 8192;
-    var1 >>= 14;
+  int32_t adc_T = ((int32_t)tfine[0] << 12) | ((int32_t)tfine[1] << 4) | (tfine[2] >> 4);
 
-    v_x1_u32r *= var1;
+  int32_t var1 = ((((adc_T >> 3) - (T1 << 1))) * ((int32_t)T2)) >> 11;
+  int32_t var2 = ((((adc_T >> 4) - T1) * ((adc_T >> 4) - (int32_t)T1)) >> 12) * (((int32_t)T3) >> 14);
+  t_fine = var1 + var2;
 
-    int32_t adjust = v_x1_u32r >> 15;
-    adjust *= adjust;
-    adjust >>= 7;
-    adjust *= (int32_t)H1;
-    adjust >>= 4;
-    
-    v_x1_u32r -= adjust;
+  uint8_t data[2];
+  read(dev_addr, HUM_MSB, data, 2);
+  int32_t adc_H = (data[0] << 8) | data[1];
+  
+  int32_t v_x1_u32r = t_fine - 76800;
+  int32_t part1 = adc_H << 14;
+  int32_t part2 = (int32_t)H4 << 20;
+  int32_t part3 = (int32_t)H5 * v_x1_u32r;
+  v_x1_u32r = (part1 - part2 - part3 + 16384) >> 15;
 
-    if (v_x1_u32r < 0) v_x1_u32r = 0;
-    if (v_x1_u32r > 419430400) v_x1_u32r = 419430400;
+  var1 = (v_x1_u32r * (int32_t)H6) >> 10;
+  var2 = (v_x1_u32r * (int32_t)H3) >> 11;
+  var1 = (var1 * (var2 + 32768)) >> 10;
+  var1 = (var1 + 2097152) * (int32_t)H2 + 8192;
+  var1 >>= 14;
 
-    return (float)(v_x1_u32r >> 12) / 1024.0f;
+  v_x1_u32r = v_x1_u32r * var1;
+  int32_t adjust = (v_x1_u32r >> 15) * (v_x1_u32r >> 15) >> 7;
+  adjust = (adjust * (int32_t)H1) >> 4;
+  v_x1_u32r -= adjust;
+
+  v_x1_u32r = (v_x1_u32r < 0) ? 0 : v_x1_u32r;
+  v_x1_u32r = (v_x1_u32r > 419430400) ? 419430400 : v_x1_u32r;
+
+  return (float)(v_x1_u32r >> 12) / 1024.0f;
 }
 
 float BME280_LITE::readAltitude(uint8_t dev_addr, float current_sea_level_pressure) {
