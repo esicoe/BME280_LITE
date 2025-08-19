@@ -1,7 +1,9 @@
 #include "BME280_LITE.h"
 
 bool BME280_LITE::write(uint8_t dev_addr, uint8_t reg_addr, uint8_t reg_val) {
-  Wire.setWireTimeout(10000, true);
+  #if defined(WIRE_HAS_TIMEOUT)
+    Wire.setWireTimeout(10000, true);
+  #endif
 
   Wire.beginTransmission(dev_addr);
   Wire.write(reg_addr);
@@ -15,8 +17,10 @@ bool BME280_LITE::write(uint8_t dev_addr, uint8_t reg_addr, uint8_t reg_val) {
 }
 
 void BME280_LITE::read(uint8_t dev_addr, uint8_t reg_addr, uint8_t *data_buf, uint8_t read_len) {
-  Wire.setWireTimeout(10000, true);
-
+  #if defined(WIRE_HAS_TIMEOUT)
+    Wire.setWireTimeout(10000, true);
+  #endif
+    
   Wire.beginTransmission(dev_addr);
   Wire.write(reg_addr);
   Wire.endTransmission(false);
