@@ -32,7 +32,7 @@ The initialization function configures some settings like:
 #### Parameters
 
 ```cpp
-bme.initialize(BMEaddress, Humidity_oversampling, Temperature_oversampling, Pressure_oversampling, BME_mode, BME_standby, BME_IIR_filter)
+bme.begin(BMEaddress, Humidity_oversampling, Temperature_oversampling, Pressure_oversampling, BME_mode, BME_standby, BME_IIR_filter)
 ```
 
 | Parameter | Values | Description |
@@ -49,7 +49,7 @@ bme.initialize(BMEaddress, Humidity_oversampling, Temperature_oversampling, Pres
 
 **Example**:
 ```cpp
-bme.initialize(BME_ADDR, BME_H_X1, BME_T_X1, BME_P_X2, BME_NORMAL, BME_TSB_0_5MS, BME_FILTER_2);
+bme.begin(BME_ADDR, BME_H_X1, BME_T_X1, BME_P_X2, BME_NORMAL, BME_TSB_0_5MS, BME_FILTER_2);
 ```
 
 ---
@@ -88,7 +88,7 @@ bme.readTemperature(BMEaddress)
 |-----------|--------|-------------|
 | `BMEaddress` | `0x76` (primary), `0x77` (alternate) | I²C device address |
 
-**Returns**: Struct BME_SensorData where bool isValid t/f based on success and data `float` - Temperature in degrees Celsius
+**Returns**: Struct BME_SensorData where bool isValid t/f based on success and data `float` - Temperature in degrees Celsius. See example.
 
 ---
 
@@ -106,7 +106,7 @@ bme.readHumidity(BMEaddress)
 |-----------|--------|-------------|
 | `BMEaddress` | `0x76` (primary), `0x77` (alternate) | I²C device address |
 
-**Returns**: `float` - Relative humidity in %RH
+**Returns**: Struct BME_SensorData where bool isValid t/f based on success and data `float` - Humidity in %RH. See example.
 
 ---
 
@@ -124,7 +124,7 @@ bme.readPressure(BMEaddress)
 |-----------|--------|-------------|
 | `BMEaddress` | `0x76` (primary), `0x77` (alternate) | I²C device address |
 
-**Returns**: `float` - Atmospheric pressure in Pascals (Pa)
+**Returns**: Struct BME_SensorData where bool isValid t/f based on success and data `float` - Pressure in hPa. See example.
 
 ---
 
@@ -135,11 +135,11 @@ Calculates altitude based on atmospheric pressure readings.
 #### Parameters
 
 ```cpp
-bme.readAltitude(BMEaddress)
+bme.readAltitude(BMEaddress, SeaLevelPressure_hPa)
 ```
 
 | Parameter | Values | Description |
 |-----------|--------|-------------|
 | `BMEaddress` | `0x76` (primary), `0x77` (alternate) | I²C device address |
 
-**Returns**: `float` - Altitude in meters
+**Returns**: Struct BME_SensorData where bool isValid t/f based on success and data `float` - Altitude in meters. See example.
