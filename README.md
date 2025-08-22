@@ -6,7 +6,7 @@ This is the BME280_LITE library, designed to be lightweight for memory. This lib
 
 ## Functions
 
-### `initialize()`
+### `begin()`
 
 This function writes the registers in the BME280 responsible for the initialization of the sensor, and must be called once in `setup()`. The registers configured are:
 
@@ -68,7 +68,7 @@ bme.calibrate(BMEaddress)
 |-----------|--------|-------------|
 | `BMEaddress` | `0x76` (primary), `0x77` (alternate) | I²C device address |
 
-**Returns**: `none`
+**Returns**: `boolean` - `true` if initialization was successful, `false` otherwise
 
 ---
 
@@ -88,7 +88,7 @@ bme.readTemperature(BMEaddress)
 |-----------|--------|-------------|
 | `BMEaddress` | `0x76` (primary), `0x77` (alternate) | I²C device address |
 
-**Returns**: `float` - Temperature in degrees Celsius
+**Returns**: Struct BME_SensorData where bool isValid t/f based on success and data `float` - Temperature in degrees Celsius
 
 ---
 
