@@ -29,14 +29,25 @@ The initialization function configures some settings like:
 
 > **Note**: Higher oversampling settings take more time but are still quite fast (under 10ms)
 
-#### Parameters
+#### Two Ways to Initialize
 
+**Option 1: Default (backwards compatible)**
 ```cpp
 bme.begin(BMEaddress, Humidity_oversampling, Temperature_oversampling, Pressure_oversampling, BME_mode, BME_standby, BME_IIR_filter)
 ```
+Uses the default `Wire` object and automatically calls `Wire.begin()`.
+
+**Option 2: Custom I2C Bus (for custom pins or multiple I2C buses)**
+```cpp
+bme.begin(&Wire, BMEaddress, Humidity_oversampling, Temperature_oversampling, Pressure_oversampling, BME_mode, BME_standby, BME_IIR_filter)
+```
+Allows you to specify a custom `TwoWire` object (e.g., `&Wire`, `&Wire1`) and initialize it yourself with custom pins.
+
+#### Parameters
 
 | Parameter | Values | Description |
 |-----------|--------|-------------|
+| `TwoWire*` (optional) | `&Wire`, `&Wire1`, etc. | I²C bus object pointer (optional, defaults to Wire) |
 | `BMEaddress` | `0x76` (primary), `0x77` (alternate) | I²C device address |
 | `Humidity oversampling` | `BME_H_SKIP=0`, `BME_H_X1=1`, `BME_H_X2=2`, `BME_H_X4=3`, `BME_H_X8=4`, `BME_H_X16=5` | Humidity measurement oversampling |
 | `Temperature oversampling` | `BME_T_SKIP=0`, `BME_T_X1=1`, `BME_T_X2=2`, `BME_T_X4=3`, `BME_T_X8=4`, `BME_T_X16=5` | Temperature measurement oversampling |
@@ -47,9 +58,27 @@ bme.begin(BMEaddress, Humidity_oversampling, Temperature_oversampling, Pressure_
 
 **Returns**: `boolean` - `true` if initialization was successful, `false` otherwise
 
-**Example**:
+**Example (Default)**:
 ```cpp
-bme.begin(BME_ADDR, BME_H_X1, BME_T_X1, BME_P_X2, BME_NORMAL, BME_TSB_0_5MS, BME_FILTER_2);
+// Uses default Wire object
+if (!bme.begin(0x76, BME_H_X1, BME_T_X1, BME_P_X2, BME_NORMAL, BME_TSB_0_5MS, BME_FILTER_2)) {
+  Serial.println("BME280 initialization failed!");
+}
+```
+
+**Example (Custom I2C Pins - ESP32)**:
+```cpp
+// Define custom pins
+#define SDA_PIN 21
+#define SCL_PIN 22
+
+// Initialize Wire with custom pins before calling begin
+Wire.begin(SDA_PIN, SCL_PIN);
+
+// Pass &Wire to use the initialized bus
+if (!bme.begin(&Wire, 0x76, BME_H_X1, BME_T_X1, BME_P_X2, BME_NORMAL, BME_TSB_0_5MS, BME_FILTER_2)) {
+  Serial.println("BME280 initialization failed!");
+}
 ```
 
 ---

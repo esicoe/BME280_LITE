@@ -43,6 +43,11 @@ bool BME280_LITE::begin(TwoWire *w,uint8_t BMEaddress, uint8_t BMEosrs_H, uint8_
   return false;
 }
 
+bool BME280_LITE::begin(uint8_t BMEaddress, uint8_t BMEosrs_H, uint8_t BMEosrs_T, uint8_t BMEosrs_P, uint8_t BMEmode, uint8_t BMEstby, uint8_t BMEIIR) {
+  Wire.begin();
+  return begin(&Wire, BMEaddress, BMEosrs_H, BMEosrs_T, BMEosrs_P, BMEmode, BMEstby, BMEIIR);
+}
+
 bool BME280_LITE::calibrate(uint8_t BMEaddress) {
   BME_RegisterData Calib1 = read(BMEaddress, DIG_T1_LSB, 26);
   if (!Calib1.isValid) return false;
