@@ -4,17 +4,17 @@ BME_RegisterData BME280_LITE::read(uint8_t BMEaddress, uint8_t BMEregAddress, ui
   BME_RegisterData status = {false, {0}};
 
   #if defined(WIRE_HAS_TIMEOUT)
-    Wire.setWireTimeout(10000, true);
+    _wire->setWireTimeout(10000, true);
   #endif
 
-  Wire.beginTransmission(BMEaddress);
-  Wire.write(BMEregAddress);
-  if (Wire.endTransmission(false) != 0) return status;
+  _wire->beginTransmission(BMEaddress);
+  _wire->write(BMEregAddress);
+  if (_wire->endTransmission(false) != 0) return status;
 
-  if (Wire.requestFrom(BMEaddress, BMEnumBytes, true) != BMEnumBytes) return status;
+  if (_wire->requestFrom(BMEaddress, BMEnumBytes, true) != BMEnumBytes) return status;
 
   for (uint8_t i = 0; i<BMEnumBytes; i++) {
-    status.data[i] = Wire.read();
+    status.data[i] = _wire->read();
   }
   status.isValid = true;
   return status;
@@ -22,18 +22,18 @@ BME_RegisterData BME280_LITE::read(uint8_t BMEaddress, uint8_t BMEregAddress, ui
 
 bool BME280_LITE::write(uint8_t BMEaddress, uint8_t BMEregAddress, uint8_t BMEwriteData) {
   #if defined(WIRE_HAS_TIMEOUT)
-    Wire.setWireTimeout(10000, true);
+    _wire->setWireTimeout(10000, true);
   #endif
 
-  Wire.beginTransmission(BMEaddress);
-  Wire.write(BMEregAddress);
-  Wire.write(BMEwriteData);
-  if (Wire.endTransmission() != 0) return false;
+  _wire->beginTransmission(BMEaddress);
+  _wire->write(BMEregAddress);
+  _wire->write(BMEwriteData);
+  if (_wire->endTransmission() != 0) return false;
   return true; 
 }
 
-bool BME280_LITE::begin(uint8_t BMEaddress, uint8_t BMEosrs_H, uint8_t BMEosrs_T, uint8_t BMEosrs_P, uint8_t BMEmode, uint8_t BMEstby, uint8_t BMEIIR) {
-  Wire.begin();
+bool BME280_LITE::begin(TwoWire *w,uint8_t BMEaddress, uint8_t BMEosrs_H, uint8_t BMEosrs_T, uint8_t BMEosrs_P, uint8_t BMEmode, uint8_t BMEstby, uint8_t BMEIIR) {
+  _wire = w;
 
   if (write(BMEaddress, CTRL_HUM, BMEosrs_H) && 
       write(BMEaddress, CTRL_MEAS, (BMEosrs_T << 5) | (BMEosrs_P << 2) | BMEmode) &&
@@ -41,6 +41,11 @@ bool BME280_LITE::begin(uint8_t BMEaddress, uint8_t BMEosrs_H, uint8_t BMEosrs_T
         return true;
       }
   return false;
+}
+
+bool BME280_LITE::begin(uint8_t BMEaddress, uint8_t BMEosrs_H, uint8_t BMEosrs_T, uint8_t BMEosrs_P, uint8_t BMEmode, uint8_t BMEstby, uint8_t BMEIIR) {
+  Wire.begin();
+  return begin(&Wire, BMEaddress, BMEosrs_H, BMEosrs_T, BMEosrs_P, BMEmode, BMEstby, BMEIIR);
 }
 
 bool BME280_LITE::calibrate(uint8_t BMEaddress) {

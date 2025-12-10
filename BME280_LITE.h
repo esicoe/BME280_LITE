@@ -75,6 +75,7 @@ struct BME_SensorData {
 
 class BME280_LITE {
   public:
+    bool begin(TwoWire *w, uint8_t BMEaddress, uint8_t BMEosrs_H, uint8_t BMEosrs_T, uint8_t BMEosrs_P, uint8_t BMEmode, uint8_t BMEstby, uint8_t BMEIIR);
     bool begin(uint8_t BMEaddress, uint8_t BMEosrs_H, uint8_t BMEosrs_T, uint8_t BMEosrs_P, uint8_t BMEmode, uint8_t BMEstby, uint8_t BMEIIR);
     bool calibrate(uint8_t BMEaddress);
     BME_SensorData readTemperature(uint8_t BMEaddress);
@@ -86,6 +87,7 @@ class BME280_LITE {
     BME_RegisterData read(uint8_t BMEaddress, uint8_t BMEregAddress, uint8_t BMEnumBytes);
     bool write(uint8_t BMEaddress, uint8_t BMEregAddress, uint8_t BMEwriteData);
 
+    TwoWire *_wire;
     uint16_t T1;
     int16_t T2, T3;
     uint16_t P1;
